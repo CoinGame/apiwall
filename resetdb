@@ -1,0 +1,27 @@
+#!/bin/bash
+
+dbname=$1
+
+if [ "$dbname" == "" ]; then
+    echo "please provide a database name"
+    exit
+fi
+
+#checks to see if we're using debian or osx version of service command
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # using Postgres.app
+  pg_ctl -D ~/Library/Application\ Support/Postgres/var-9.4 restart
+else
+  sudo service postgresql restart
+fi
+
+sleep 5
+
+rm -rf migrations
+
+dropdb $dbname
+createdb $dbname
+
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
